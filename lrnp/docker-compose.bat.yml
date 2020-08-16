@@ -1,0 +1,50 @@
+# 编排php,redis,nginx容器
+version: "3.6" # 确定docker-composer文件的版本
+services: # 代表就是一组服务 - 简单来说一组容器
+  nginx: # 这个表示服务的名称，课自定义; 注意不是容器名称
+    build: # 根据dockerfile构建镜像及构 建为容器
+      context: ./nginx
+    image: nginx_srm_2007 # 指定容器的镜像文件
+    container_name: nginx_compose # 这是容器的名称
+    ports: # 配置容器与宿主机的端口
+      - "82:80"
+    networks: ## 引入外部预先定义的网段
+       nginx_net:
+         ipv4_address: 172.15.22.110   #设置ip地址
+    volumes: # 配置数据挂载
+        - /www/wwwroot/2007_SRM/00-2/compose/nginx/conf:/conf
+    working_dir: /conf #工作目录
+  php: # 这个表示服务的名称，课自定义; 注意不是容器名称
+    build: # 根据dockerfile构建镜像及构建为容器
+      context: ./php
+    image: php7 # 指定容器的镜像文件
+    container_name: php_compose # 这是容器的名称
+    ports: # 配置容器与宿主机的端口
+      - "9002:9000"
+    networks: ## 引入外部预先定义的网段
+       nginx_net:
+         ipv4_address: 172.15.22.120   #设置ip地址
+    volumes: # 配置数据挂载
+        - /www/wwwroot/2007_SRM/00-2/compose/php/www:/www
+  redis: # 这个表示服务的名称，课自定义; 注意不是容器名称
+    image: redis5 # 指定容器的镜像文件
+    networks: ## 引入外部预先定义的网段
+       nginx_net:
+         ipv4_address: 172.15.22.130   #设置ip地址
+    container_name: redis_compose # 这是容器的名称
+    ports: # 配置容器与宿主机的端口
+      - "6380:6379"
+    volumes: # 配置数据挂载
+        - /www/wwwroot/2007_SRM/00-2/compose/redis:/redis
+# 设置网络模块
+networks:
+  # 使用之前定义的网络
+  # lrnp:
+  #   external:
+  #     name: lrnp
+  # 自定义网络
+  nginx_net:
+    driver: bridge
+    ipam: #定义网段
+      config:
+        - subnet: "172.15.22.0/24"

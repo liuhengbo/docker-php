@@ -1,0 +1,40 @@
+FROM php:7.3-fpm-alpine 
+
+# Version
+ENV PHPREDIS_VERSION 4.0.0
+
+# Libs
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories \
+    && apk  add  \
+        curl \
+        vim  \
+        wget \
+        git \
+        openssl-dev\
+        zip \
+        unzip \
+        g++  make autoconf
+
+COPY ./conf/php.ini "$PHP_INI_DIR/php.ini"
+
+# docker方式安装PDO extension                                                                                # 安装扩展
+# mv "$PHP_INI_DIR/php.ini-production"  "$PHP_INI_DIR/php.ini" \
+RUN docker-php-ext-install pdo_mysql \
+    && docker-php-ext-install pcntl \
+    && docker-php-ext-install sysvmsg
+
+# Redis extension
+RUN wget http://pecl.php.net/get/redis-${PHPREDIS_VERSION}.tgz -O /tmp/redis.tar.tgz \
+    && pecl install /tmp/redis.tar.tgz \
+    && rm -rf /tmp/redis.tar.tgz \
+    && docker-php-ext-enable redis
+# 修改php.ini的文件 extension=redis.so
+
+COPY ./conf/php-fpm.conf "/usr/local/etc/php-fpm.conf"
+
+COPY ./conf/php-fpm.d/www.conf "/usr/local/etc/php-fpm.d/www.conf"
+
+
+EXPOSE 9000
+#设置工作目录
+WORKDIR  /www

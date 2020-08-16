@@ -1,0 +1,39 @@
+# 编排php,redis,nginx容器
+version: "3.6" # 确定docker-composer文件的版本
+services: # 代表就是一组服务 - 简单来说一组容器
+  nginx: # 这个表示服务的名称，课自定义; 注意不是容器名称
+    build: # 根据dockerfile构建镜像及构 建为容器
+      context: ./nginx
+    image: nginx_srm_2007 # 指定容器的镜像文件
+    container_name: nginx_compose # 这是容器的名称
+    networks: ## 引入外部预先定义的网段
+      lrnp:
+         ipv4_address: 110.110.110.110   #设置ip地址
+    volumes: # 配置数据挂载
+        - /media/hengbo/_dde_data/hengbo/docker/lrnp/nginx/conf:/conf
+    working_dir: /conf #工作目录
+  php: # 这个表示服务的名称，课自定义; 注意不是容器名称
+    build: # 根据dockerfile构建镜像及构建为容器
+      context: ./php
+    image: php_srm_2007 # 指定容器的镜像文件
+    container_name: php_compose # 这是容器的名称
+    networks: ## 引入外部预先定义的网段
+      lrnp:
+         ipv4_address: 110.110.110.120   #设置ip地址
+    volumes: # 配置数据挂载
+        -  /media/hengbo/_dde_data/hengbo/docker/lrnp/www:/www
+  redis: # 这个表示服务的名称，课自定义; 注意不是容器名称
+    image: redis_srm_2007 # 指定容器的镜像文件
+    networks: ## 引入外部预先定义的网段
+       lrnp:
+         ipv4_address: 110.110.110.100   #设置ip地址
+    container_name: redis_compose # 这是容器的名称
+    volumes: # 配置数据挂载
+        -  /media/hengbo/_dde_data/hengbo/docker/lrnp/redis/conf:/conf
+# 设置网络模块
+networks:
+  #使用之前定义的网络
+  lrnp:
+    external:
+      name: lrnp
+  #自定义网络
